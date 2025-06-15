@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aprendendo com as Cores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f4f4;
+    }
+    header {
+      background: #ffcc00;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+    }
+    .banner {
+      width: 100%;
+      height: auto;
+    }
+    .coloring-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+    .tools {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .tools button, .tools input[type="color"] {
+      padding: 10px;
+      font-size: 14px;
+    }
+    footer {
+      background: #222;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Aprendendo com as Cores</h1>
+    <img src="images/banner.jpg" alt="Crianças brincando no parque" class="banner">
+  </header>  <section class="coloring-section" id="coloring-section">
+    <!-- 24 desenhos serão inseridos via JavaScript -->
+  </section>  <footer>
+    <p>Visite: <a href="https://globalplataformmf.github.io" style="color: #00ffcc;">globalplataformmf.github.io</a></p>
+    <p>Carteira para doações (USDT/BEP20 - BNB): <strong>0x84f9dbe575fb83ad073741a387ed9e8e40dda999</strong></p>
+  </footer>  <script>
+    const desenhos = 24;
+    const section = document.getElementById('coloring-section');
+
+    for (let i = 1; i <= desenhos; i++) {
+      const container = document.createElement('div');
+      const canvas = document.createElement('canvas');
+      canvas.width = 300;
+      canvas.height = 300;
+      canvas.dataset.index = i;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.src = `https://placehold.co/300x300/FFFFFF/000000?text=Desenho+${i}`; // Substituir por links reais dos desenhos
+      img.onload = () => ctx.drawImage(img, 0, 0, 300, 300);
+
+      const tools = document.createElement('div');
+      tools.className = 'tools';
+      const colorPicker = document.createElement('input');
+      colorPicker.type = 'color';
+      colorPicker.value = '#000000';
+      colorPicker.addEventListener('input', () => ctx.strokeStyle = colorPicker.value);
+
+      const eraseBtn = document.createElement('button');
+      eraseBtn.textContent = 'Apagar';
+      eraseBtn.onclick = () => ctx.clearRect(0, 0, 300, 300);
+
+      const printBtn = document.createElement('button');
+      printBtn.textContent = 'Imprimir';
+      printBtn.onclick = () => window.print();
+
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = 'Salvar';
+      saveBtn.onclick = () => {
+        const link = document.createElement('a');
+        link.download = `desenho-${i}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+      };
+
+      const shareBtn = document.createElement('button');
+      shareBtn.textContent = 'Compartilhar';
+      shareBtn.onclick = async () => {
+        if (navigator.share) {
+          const file = await (await fetch(canvas.toDataURL())).blob();
+          const filesArray = [new File([file], `desenho-${i}.png`, { type: file.type })];
+          navigator.share({
+            title: 'Desenho Colorido',
+            files: filesArray
+          });
+        } else {
+          alert('Compartilhamento não suportado neste navegador.');
+        }
+      };
+
+      tools.append(colorPicker, eraseBtn, printBtn, saveBtn, shareBtn);
+      container.append(canvas, tools);
+      section.appendChild(container);
+    }
+  </script></body>
+</html>
