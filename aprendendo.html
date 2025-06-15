@@ -1,0 +1,133 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aprendendo com as Cores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #4caf50;
+      color: white;
+      padding: 20px;
+    }
+    .container {
+      padding: 20px;
+    }
+    .drawing-canvas {
+      border: 1px solid #ccc;
+      background: white;
+      margin: 20px auto;
+    }
+    .palette {
+      margin: 10px auto;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .color {
+      width: 30px;
+      height: 30px;
+      margin: 5px;
+      border: 2px solid #333;
+      cursor: pointer;
+    }
+    .tools button {
+      margin: 5px;
+      padding: 10px;
+      cursor: pointer;
+    }
+    footer {
+      background-color: #333;
+      color: white;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Aprendendo com as Cores</h1>
+    <p>Desenhos para colorir com a <strong><a href="https://globalplataformmf.github.io" target="_blank" style="color: yellow;">GlobalPlatformMF</a></strong></p>
+  </header>
+  <div class="container">
+    <canvas id="canvas" class="drawing-canvas" width="600" height="500"></canvas><div class="palette" id="colorPalette"></div>
+
+<div class="tools">
+  <button onclick="clearCanvas()">Apagar</button>
+  <button onclick="saveImage()">Salvar</button>
+  <button onclick="window.print()">Imprimir</button>
+  <button onclick="shareImage()">Compartilhar</button>
+</div>
+
+  </div>  <footer>
+    <p><strong>Doações:</strong> 0x84f9dbe575fb83ad073741a387ed9e8e40dda999 (USDT BNB)</p>
+  </footer>  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+    let currentColor = '#000';
+
+    canvas.addEventListener('mousedown', () => painting = true);
+    canvas.addEventListener('mouseup', () => painting = false);
+    canvas.addEventListener('mousemove', draw);
+
+    function draw(e) {
+      if (!painting) return;
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = currentColor;
+
+      const rect = canvas.getBoundingClientRect();
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function saveImage() {
+      const link = document.createElement('a');
+      link.download = 'desenho-colorido.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function shareImage() {
+      const dataUrl = canvas.toDataURL();
+      if (navigator.share) {
+        navigator.share({
+          title: 'Meu desenho',
+          text: 'Veja meu desenho colorido!',
+          url: dataUrl
+        }).catch(console.error);
+      } else {
+        alert('Compartilhamento não suportado neste dispositivo.');
+      }
+    }
+
+    const palette = document.getElementById('colorPalette');
+    const colors = [
+      '#000000','#FF0000','#00FF00','#0000FF','#FFFF00','#FF00FF','#00FFFF','#800000','#008000','#000080',
+      '#808000','#800080','#008080','#C0C0C0','#808080','#FFA500','#A52A2A','#8A2BE2','#5F9EA0','#D2691E',
+      '#DC143C','#00CED1','#ADFF2F','#4B0082'
+    ];
+
+    colors.forEach(color => {
+      const div = document.createElement('div');
+      div.className = 'color';
+      div.style.backgroundColor = color;
+      div.addEventListener('click', () => {
+        currentColor = color;
+      });
+      palette.appendChild(div);
+    });
+  </script></body>
+</html>
