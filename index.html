@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Aprendendo com as Cores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    .banner img {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+    }
+    .drawing-area {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #aaa;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      cursor: pointer;
+    }
+    .palette {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+    .color {
+      width: 30px;
+      height: 30px;
+      margin: 5px;
+      border: 2px solid #444;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .color.selected {
+      border: 3px solid #000;
+    }
+    .tools button {
+      margin: 5px;
+      padding: 10px 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .navigation {
+      margin: 20px;
+    }
+    .footer {
+      font-size: 14px;
+      color: #555;
+      margin-top: 30px;
+    }
+    .donation {
+      font-weight: bold;
+    }
+    .qr img {
+      margin-top: 10px;
+      width: 150px;
+      height: 150px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="banner">
+    <img src="banner.jpg" alt="Crianças brincando e colorindo no parque" />
+  </div>
+
+  <h1>Aprendendo com as Cores</h1>
+  <p>Desenhos para colorir com a <strong><a href="https://globalplataformmf.github.io" target="_blank">GlobalPlatformMF</a></strong></p>
+
+  <div class="drawing-area">
+    <div id="message"><strong>Clique no desenho para colorir!</strong></div>
+    <svg id="svgDrawing" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <div class="palette" id="colorPalette"></div>
+
+  <div class="tools">
+    <button onclick="clearColors()">Apagar</button>
+    <button onclick="saveImage()">Salvar</button>
+    <button onclick="window.print()">Imprimir</button>
+    <button onclick="shareImage()">Compartilhar</button>
+  </div>
+
+  <div class="navigation">
+    <button onclick="previousDrawing()">← Página Anterior</button>
+    <button onclick="nextDrawing()">Próxima Página →</button>
+  </div>
+
+  <div class="footer">
+    <p>Doações: <span class="donation">0x84f9dbe575fb83ad073741a387ed9e8e40dda999</span> (USDT BNB)</p>
+    <div class="qr">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?data=0x84f9dbe575fb83ad073741a387ed9e8e40dda999&size=150x150" alt="QR Code para doações" />
+    </div>
+    <p><a href="https://globalplataformmf.github.io" target="_blank">globalplataformmf.github.io</a></p>
+  </div>
+
+<script>
+  const colors = [
+    '#000000', '#FF0000', '#00FF00', '#0000FF',
+    '#FFFF00', '#FF00FF', '#00FFFF', '#FFFFFF',
+    '#FFA500', '#800080', '#808000', '#008080',
+    '#A52A2A', '#C0C0C0', '#008000', '#FFC0CB',
+    '#4682B4', '#B22222', '#DAA520', '#2E8B57',
+    '#DC143C', '#4B0082', '#D2691E', '#87CEEB'
+  ];
+
+  let currentColor = '#000000';
+  let currentIndex = 0;
+
+  const drawings = [
+    `<g class="colorable" data-msg="Borboleta!"><ellipse cx="300" cy="200" rx="80" ry="50" fill="white" stroke="black" stroke-width="2"/></g>`,
+    `<g class="colorable" data-msg="Peixinho feliz!"><ellipse cx="300" cy="200" rx="60" ry="40" fill="white" stroke="black" stroke-width="2"/><circle cx="280" cy="190" r="5" fill="white" stroke="black"/></g>`,
+    `<g class="colorable" data-msg="Corujinha atenta!"><circle cx="300" cy="200" r="50" fill="white" stroke="black" stroke-width="2"/><circle cx="280" cy="190" r="10" fill="white" stroke="black"/><circle cx="320" cy="190" r="10" fill="white" stroke="black"/></g>`,
+    `<g class="colorable" data-msg="Tartaruga tranquila!"><ellipse cx="300" cy="200" rx="70" ry="40" fill="white" stroke="black" stroke-width="2"/><circle cx="260" cy="200" r="10" fill="white" stroke="black"/></g>`,
+    `<g class="colorable" data-msg="Coelhinho saltitante!"><ellipse cx="300" cy="240" rx="40" ry="50" fill="white" stroke="black"/><line x1="280" y1="180" x2="280" y2="210" stroke="black" /></g>`,
+    `<g class="colorable" data-msg="Passarinho livre!"><path d="M250 220 Q300 150 350 220" fill="white" stroke="black"/></g>`
+    // ... Adicione até 24 desenhos aqui
+  ];
+
+  function initPalette() {
+    const palette = document.getElementById('colorPalette');
+    colors.forEach(color => {
+      const div = document.createElement('div');
+      div.className = 'color';
+      div.style.backgroundColor = color;
+      div.onclick = () => {
+        currentColor = color;
+        document.querySelectorAll('.color').forEach(c => c.classList.remove('selected'));
+        div.classList.add('selected');
+      };
+      palette.appendChild(div);
+    });
+    palette.firstChild.classList.add('selected');
+  }
+
+  function renderDrawing(index) {
+    const svg = document.getElementById('svgDrawing');
+    svg.innerHTML = drawings[index];
+    const group = svg.querySelector('.colorable');
+    const msg = group.getAttribute('data-msg');
+    document.getElementById('message').textContent = msg || "Clique para colorir!";
+    group.addEventListener('click', () => {
+      group.querySelectorAll('[fill]').forEach(el => el.setAttribute('fill', currentColor));
+    });
+  }
+
+  function nextDrawing() {
+    currentIndex = (currentIndex + 1) % drawings.length;
+    renderDrawing(currentIndex);
+  }
+
+  function previousDrawing() {
+    currentIndex = (currentIndex - 1 + drawings.length) % drawings.length;
+    renderDrawing(currentIndex);
+  }
+
+  function clearColors() {
+    document.querySelectorAll('#svgDrawing [fill]').forEach(el => {
+      el.setAttribute('fill', 'white');
+    });
+  }
+
+  function saveImage() {
+    const svg = document.getElementById("svgDrawing");
+    const serializer = new XMLSerializer();
+    const source = serializer.serializeToString(svg);
+    const svgBlob = new Blob([source], {type:"image/svg+xml;charset=utf-8"});
+    const url = URL.createObjectURL(svgBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "desenho.svg";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function shareImage() {
+    alert("Compartilhe manualmente após salvar!");
+  }
+
+  // Inicializa
+  initPalette();
+  renderDrawing(currentIndex);
+</script>
+
+</body>
+</html>
